@@ -24,18 +24,22 @@ export function usePanelPort() {
         const port = chrome.runtime.connect({ name: 'devtools-panel' })
         portRef.current = port
         setConnected(true)
+        console.log('[Panel] Connected to background worker')
 
         port.postMessage({ kind: 'PANEL_READY' } satisfies MessageType)
+        console.log('[Panel] Sent PANEL_READY message')
 
         port.onMessage.addListener((msg: MessageType) => {
 
           if (msg.kind === 'ERRORS_FETCHED') {
+            console.log('[Panel] ERRORS_FETCHED:', msg.errors.length, 'errors')
             setErrors(
               msg.errors.map(e => ({ payload: e, count: 1, firstSeen: e.timestamp }))
             )
           }
 
           if (msg.kind === 'ERROR_CAPTURED') {
+            console.log('[Panel] ERROR_CAPTURED:', msg.payload.message)
             setErrors(prev => {
               const key = `${msg.payload.message}__${msg.payload.source ?? ''}`
               const existingIndex = prev.findIndex(
