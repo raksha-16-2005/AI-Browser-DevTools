@@ -16,6 +16,16 @@ chrome.runtime.onConnect.addListener((port) => {
   })
 
   port.onMessage.addListener((msg: MessageType) => {
+    // Handle heartbeat to keep service worker alive
+    if (msg.kind === 'HEARTBEAT') {
+      try {
+        port.postMessage({ kind: 'HEARTBEAT_ACK' })
+      } catch (err) {
+        console.warn('[AI DevTools] Heartbeat ACK failed:', err)
+      }
+      return
+    }
+
     if (msg.kind === 'PANEL_READY') {
       loadStoredErrors().then((errors) => {
         port.postMessage({ kind: 'ERRORS_FETCHED', errors } satisfies MessageType)

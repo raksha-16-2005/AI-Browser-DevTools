@@ -32,3 +32,5 @@ export type MessageType =
   | { kind: 'AI_DONE'; errorId: string; explanation: AIExplanation }
   | { kind: 'AI_ERROR'; errorId: string; message: string }
   | { kind: 'DEVTOOLS_OPENED'; tabId: number }        // ← new
+  | { kind: 'HEARTBEAT' }                             // ← keep-alive ping
+  | { kind: 'HEARTBEAT_ACK' }                         // ← keep-alive ack

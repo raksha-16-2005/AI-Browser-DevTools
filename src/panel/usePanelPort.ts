@@ -97,6 +97,11 @@ export function usePanelPort() {
             }))
           }
 
+          // Heartbeat acknowledgement — keeps extension context alive
+          if (msg.kind === 'HEARTBEAT_ACK') {
+            // Silent ACK — just confirms connection is alive
+          }
+
           // Keyboard shortcut triggered from background
           // Init AI state and signal App.tsx to auto-select this error
           if (msg.kind === 'AI_REQUEST') {

@@ -19,23 +19,53 @@ chrome.devtools.panels.create(
   }
 )
 
-// Self-healing port connection
+// Self-healing port connection with exponential backoff
 let port: chrome.runtime.Port | null = null
+let reconnectAttempts = 0
+const MAX_RECONNECT_ATTEMPTS = 10
 
 function connect() {
   try {
     port = chrome.runtime.connect({ name: 'devtools-panel' })
     console.log('[AI DevTools] Port opened')
+    reconnectAttempts = 0
+
+    // Send heartbeat to keep connection alive
+    const heartbeatInterval = setInterval(() => {
+      if (!port) {
+        clearInterval(heartbeatInterval)
+        return
+      }
+      try {
+        port.postMessage({ kind: 'HEARTBEAT' })
+      } catch (err) {
+        console.warn('[AI DevTools] Heartbeat failed:', err)
+        clearInterval(heartbeatInterval)
+      }
+    }, 5000)
 
     port.onDisconnect.addListener(() => {
-      console.log('[AI DevTools] Port dropped — reconnecting in 500ms')
+      clearInterval(heartbeatInterval)
+      console.log('[AI DevTools] Port dropped — reconnecting...')
       port = null
-      setTimeout(connect, 500)
+      scheduleReconnect()
     })
   } catch (err) {
     console.error('[AI DevTools] connect() failed:', err)
-    setTimeout(connect, 500)
+    scheduleReconnect()
   }
+}
+
+function scheduleReconnect() {
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.error('[AI DevTools] Max reconnection attempts reached')
+    return
+  }
+  
+  const delay = Math.min(500 * Math.pow(1.5, reconnectAttempts), 10000)
+  reconnectAttempts++
+  console.log(`[AI DevTools] Reconnecting in ${delay}ms (attempt ${reconnectAttempts})`)
+  setTimeout(connect, delay)
 }
 
 connect()
