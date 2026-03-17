@@ -1,0 +1,43 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Package extension
+        run: |
+          mkdir -p artifact
+          if [ -d dist ]; then
+            cd dist
+            zip -r ../artifact/ai-devtools-${{ github.run_number }}.zip .
+            cd ..
+          else
+            echo "dist/ not found; did the build step produce output?" && exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-devtools-zip
+          path: artifact/*.zip

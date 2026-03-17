@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI DevTools Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error-log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 AI DevTools Extension Test Page</h1>
+    <p>Use this page to test the AI DevTools extension. Click buttons below to trigger various errors.</p>
+
+    <div class="test-section">
+        <h2>🔴 Uncaught Errors</h2>
+        <button onclick="triggerTypeError()">TypeError - Property on Null</button>
+        <button onclick="triggerReferenceError()">ReferenceError - Undefined Variable</button>
+        <button onclick="triggerSyntaxError()">SyntaxError - JSON Parse</button>
+        <button onclick="triggerSimpleError()">Simple Error - Direct Throw</button>
+    </div>
+
+    <div class="test-section">
+        <h2>⚠️ Promise Rejections</h2>
+        <button onclick="triggerDirectRejection()">Unhandled Promise Rejection</button>
+        <button onclick="triggerPromiseChainError()">Promise Chain Error</button>
+        <button onclick="triggerPromiseTimeoutError()">Promise Timeout Error</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🌐 HTTP Status Errors</h2>
+        <button onclick="trigger400Error()">400 Bad Request</button>
+        <button onclick="trigger401Error()">401 Unauthorized</button>
+        <button onclick="trigger404Error()">404 Not Found</button>
+        <button onclick="trigger500Error()">500 Server Error</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Error Log</h2>
+        <div class="error-log" id="errorLog"></div>
+    </div>
+
+    <script>
+        // Log helper
+        function logEvent(message) {
+            const log = document.getElementById('errorLog');
+            if (!log) return;
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ================== UNCAUGHT ERRORS ==================
+        
+        function triggerTypeError() {
+            logEvent('❌ Triggering TypeError...');
+            const obj = null;
+            obj.property = 'value';  // Cannot read property of null
+        }
+
+        function triggerReferenceError() {
+            logEvent('❌ Triggering ReferenceError...');
+            console.log(thisVariableDoesNotExist);
+        }
+
+        function triggerSyntaxError() {
+            logEvent('❌ Triggering SyntaxError...');
+            const json = '{ invalid json }';
+            JSON.parse(json);
+        }
+
+        function triggerSimpleError() {
+            logEvent('❌ Triggering Simple Error...');
+            throw new Error('This is a simple thrown error from the test page');
+        }
+
+        // ================== PROMISE REJECTIONS ==================
+
+        function triggerDirectRejection() {
+            logEvent('⚠️ Triggering Direct Promise Rejection...');
+            Promise.reject(new Error('Direct unhandled promise rejection'));
+        }
+
+        function triggerPromiseChainError() {
+            logEvent('⚠️ Triggering Promise Chain Error...');
+            new Promise((resolve) => {
+                resolve('data');
+            }).then((data) => {
+                throw new Error('Error in promise chain: ' + data);
+            });
+        }
+
+        function triggerPromiseTimeoutError() {
+            logEvent('⚠️ Triggering Promise Timeout Error...');
+            new Promise((resolve) => {
+                setTimeout(() => {
+                    throw new Error('Error in setTimeout inside promise');
+                }, 100);
+            });
+        }
+
+        // ================== HTTP ERRORS ==================
+
+        function trigger400Error() {
+            logEvent('🌐 Requesting 400 Bad Request...');
+            fetch('/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invalid: true })
+            })
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP 400 Bad Request: Invalid request`);
+                return r.text();
+            })
+            .catch(e => {
+                throw new Error('400 Error: ' + e.message);
+            });
+        }
+
+        function trigger401Error() {
+            logEvent('🌐 Requesting 401 Unauthorized...');
+            fetch('/api/protected', {
+                headers: { 'Authorization': 'Bearer invalid-token' }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP 401 Unauthorized: Invalid credentials`);
+                return r.text();
+            })
+            .catch(e => {
+                throw new Error('401 Error: ' + e.message);
+            });
+        }
+
+        function trigger404Error() {
+            logEvent('🌐 Requesting 404 Not Found...');
+            fetch('/api/this-endpoint-does-not-exist')
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP 404 Not Found: /api/this-endpoint-does-not-exist`);
+                return r.text();
+            })
+            .catch(e => {
+                throw new Error('404 Error: ' + e.message);
+            });
+        }
+
+        function trigger500Error() {
+            logEvent('🌐 Requesting 500 Server Error...');
+            fetch('/api/error')
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP 500 Server Error: Internal server error`);
+                return r.text();
+            })
+            .catch(e => {
+                throw new Error('500 Error: ' + e.message);
+            });
+        }
+
+        // Log page load
+        logEvent('✅ Test page loaded');
+        console.log('🚀 AI DevTools Extension Test Page Ready - Click buttons to trigger errors');
+
+    </script>
+</body>
+</html>

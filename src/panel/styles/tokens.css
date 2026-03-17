@@ -1,0 +1,60 @@
+:root {
+  --bg-base:       #1a1a1a;
+  --bg-surface:    #242424;
+  --bg-raised:     #2e2e2e;
+  --bg-hover:      #363636;
+
+  --border:        #3a3a3a;
+  --border-light:  #454545;
+
+  --text-primary:  #e8e8e8;
+  --text-secondary:#a0a0a0;
+  --text-muted:    #666;
+
+  --red-bg:        #2d1b1b;
+  --red-border:    #5c2a2a;
+  --red-text:      #f87171;
+
+  --blue-bg:       #1a2535;
+  --blue-border:   #2a4060;
+  --blue-text:     #60a5fa;
+
+  --amber-bg:      #2a2010;
+  --amber-border:  #4a3a18;
+  --amber-text:    #fbbf24;
+
+  --green-bg:      #1a2a1a;
+  --green-border:  #2a4a2a;
+  --green-text:    #4ade80;
+
+  --accent:        #7c6af7;
+  --accent-hover:  #9580ff;
+
+  --font-ui:   'DM Mono', 'Fira Code', monospace;
+  --font-body: system-ui, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --transition: 150ms ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
