@@ -1,4 +1,5 @@
 import type { ErrorPayload } from '../types'
+// Note: snippet-extractor available for future use when source code is accessible
 
 export const SYSTEM_PROMPT = `You are an expert JavaScript debugger embedded inside a browser DevTools extension.
 
@@ -37,14 +38,36 @@ export function buildUserMessage(payload: ErrorPayload): string {
   }
 
   if (payload.line !== null) {
-    parts.push(`**Location:** line ${payload.line}, column ${payload.column}`)
+    parts.push(`**Location:** line ${payload.line}${payload.column !== null ? `, column ${payload.column}` : ''}`)
   }
 
   if (payload.stack) {
-    parts.push(`**Stack trace:**\n\`\`\`\n${payload.stack}\n\`\`\``)
+    // Clean and format stack trace for better readability
+    const cleanStack = cleanStackTrace(payload.stack)
+    parts.push(`**Stack trace:**\n\`\`\`\n${cleanStack}\n\`\`\``)
   }
 
+  parts.push(
+    '\n**Instructions for AI:**\n' +
+      '1. Focus on the exact line number and column where the error occurred\n' +
+      '2. Refer to specific variable names and function calls from the stack trace\n' +
+      '3. Identify the root cause with certainty, not speculation\n' +
+      '4. Provide exact code fixes with proper syntax'
+  )
+
   return parts.join('\n\n')
+}
+
+/**
+ * Clean and format stack trace for better LLM processing
+ */
+function cleanStackTrace(stack: string): string {
+  return stack
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .slice(0, 15) // Limit to first 15 frames to avoid token overflow
+    .join('\n')
 }
 
 // Parses the raw streamed text into the three sections
